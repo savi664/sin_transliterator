@@ -1,8 +1,3 @@
-New-Item LICENSE -ItemType File
-```
-
-Paste this inside it (MIT license, just replace the name):
-```
 MIT License
 
 Copyright (c) 2025 Savinu
