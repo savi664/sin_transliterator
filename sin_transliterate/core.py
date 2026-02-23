@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import List
 from .exceptions import InvalidModelError, ModelLoadError, TransliterationError
 from .model_registry import ModelType, resolve
 
@@ -23,6 +24,7 @@ class SinTransliterator:
     --------
     >>> t = SinTransliterator(model="transformer", contains_code_mix=False)
     >>> t.transliterate("mama yanawa")
+    >>> t.transliterate_batch(["mama yanawa", "kohomada"])
     """
 
     VALID_MODELS = ("transformer", "llm")
@@ -80,11 +82,14 @@ class SinTransliterator:
                 f"Original error: {exc}"
             ) from exc
 
-    def _transliterate_local(self, text: str, max_new_tokens: int) -> str:
+    def _run_inference(self, texts: List[str], max_new_tokens: int) -> List[str]:
         import torch
         try:
             inputs = self._tokenizer(
-                text, return_tensors="pt", padding=True, truncation=True
+                texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True
             ).to(self._device)
 
             with torch.no_grad():
@@ -96,16 +101,20 @@ class SinTransliterator:
                         max_new_tokens=max_new_tokens,
                         pad_token_id=self._tokenizer.eos_token_id,
                     )
-            return self._tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+            return [
+                self._tokenizer.decode(ids, skip_special_tokens=True)
+                for ids in output_ids
+            ]
 
         except Exception as exc:
             raise TransliterationError(
-                f"Local inference failed on: {text!r}\nOriginal error: {exc}"
+                f"Inference failed.\nOriginal error: {exc}"
             ) from exc
 
     def transliterate(self, text: str, max_new_tokens: int = 256) -> str:
         """
-        Transliterate romanised Sinhala text to Sinhala Unicode.
+        Transliterate a single romanised Sinhala string to Sinhala Unicode.
 
         Parameters
         ----------
@@ -122,7 +131,31 @@ class SinTransliterator:
         if not isinstance(text, str) or not text.strip():
             raise ValueError("Input text must be a non-empty string.")
 
-        return self._transliterate_local(text, max_new_tokens)
+        return self._run_inference([text], max_new_tokens)[0]
+
+    def transliterate_batch(self, texts: List[str], max_new_tokens: int = 256) -> List[str]:
+        """
+        Transliterate a list of romanised Sinhala strings to Sinhala Unicode
+        in a single batched forward pass.
+
+        Parameters
+        ----------
+        texts : list of str
+            Input romanised or code-mixed strings.
+        max_new_tokens : int
+            Maximum tokens to generate per input. Defaults to 256.
+
+        Returns
+        -------
+        list of str
+            Sinhala Unicode outputs in the same order as the input list.
+        """
+        if not isinstance(texts, list) or not texts:
+            raise ValueError("Input must be a non-empty list of strings.")
+        if not all(isinstance(t, str) and t.strip() for t in texts):
+            raise ValueError("All items in the list must be non-empty strings.")
+
+        return self._run_inference(texts, max_new_tokens)
 
     def __repr__(self) -> str:
         return (

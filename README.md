@@ -14,6 +14,7 @@ A lightweight Python package for **Sinhala phonetic transliteration** — conver
 - [Overview](#overview)
 - [Installation](#installation)
 - [Quickstart](#quickstart)
+- [Batch Transliteration](#batch-transliteration)
 - [Model Selection Guide](#model-selection-guide)
 - [VRAM & Hardware Requirements](#vram--hardware-requirements)
 - [API Reference](#api-reference)
@@ -67,6 +68,47 @@ print(t.transliterate("mama office ekkata yanawa"))
 ```
 
 Recommended on Kaggle, Google Colab, or any machine with a GPU for best performance. CPU inference is also fully supported.
+
+---
+
+## Batch Transliteration
+
+For converting large amounts of text, use `transliterate_batch()` instead of calling `transliterate()` in a loop. It feeds all inputs through the model in a single forward pass, making it significantly faster — especially on a GPU.
+
+```python
+from sin_transliterate import SinTransliterator
+
+t = SinTransliterator(model="transformer", contains_code_mix=False)
+
+results = t.transliterate_batch([
+    "mama yanawa",
+    "kohomada",
+    "mama iskole yanawa",
+    "moko wenne"
+])
+
+for r in results:
+    print(r)
+```
+
+For very large datasets, split into chunks to avoid running out of memory:
+
+```python
+import pandas as pd
+from sin_transliterate import SinTransliterator
+
+df = pd.read_csv("your_file.csv")
+t = SinTransliterator(model="transformer", contains_code_mix=False)
+
+chunk_size = 32
+results = []
+for i in range(0, len(df), chunk_size):
+    chunk = df["singlish"][i:i + chunk_size].tolist()
+    results.extend(t.transliterate_batch(chunk))
+
+df["sinhala"] = results
+df.to_csv("output.csv", index=False)
+```
 
 ---
 
@@ -126,6 +168,15 @@ SinTransliterator(
 | `max_new_tokens` | `int` | `256` | Maximum number of tokens to generate. |
 
 Returns a `str` containing the Sinhala Unicode output.
+
+#### `.transliterate_batch(texts, max_new_tokens=256)`
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `texts` | `list of str` | — | List of romanised Sinhala or code-mixed input strings. |
+| `max_new_tokens` | `int` | `256` | Maximum number of tokens to generate per input. |
+
+Returns a `list of str` containing Sinhala Unicode outputs in the same order as the input. Significantly faster than calling `.transliterate()` in a loop for large inputs.
 
 ---
 
