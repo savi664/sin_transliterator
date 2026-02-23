@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sin_transliterate"
-version = "0.1.0"
+version = "0.1.2"
 description = "Sinhala transliteration via fine-tuned Transformer and LLM models, with optional code-mix support."
 readme = "README.md"
 requires-python = ">=3.9"

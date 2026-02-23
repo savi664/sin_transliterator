@@ -15,7 +15,7 @@ class ModelSpec:
 
     @property
     def api_url(self) -> str:
-        return f"https://api-inference.huggingface.co/models/{self.repo_id}"
+        return f"https://router.huggingface.co/hf-inference/models/{self.repo_id}"
 
 
 _REGISTRY: dict[tuple[ModelType, bool], ModelSpec] = {

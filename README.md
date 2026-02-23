@@ -59,6 +59,8 @@ pip install sin_transliterate[local]
 
 No model download. No GPU. Just a free HuggingFace token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
 
+API mode uses your HuggingFace account's free inference credits. Each transliteration call consumes a small amount of credits. The free tier includes a monthly allowance that is sufficient for regular use.
+
 ```python
 from sin_transliterate import SinTransliterator
 
@@ -83,7 +85,7 @@ print(t_mix.transliterate("mama office ekkata yanawa"))
 
 ### Local Mode
 
-Downloads model weights to your machine and runs inference locally.
+Downloads model weights to your machine and runs inference locally. No credits, no rate limits, fully offline after the initial download.
 
 ```python
 from sin_transliterate import SinTransliterator
@@ -123,19 +125,21 @@ print(t.transliterate("mama office ekkata yanawa"))
 
 ## Inference Modes
 
-### `mode="api"` (default recommendation)
+### `mode="api"` (recommended for most users)
 
 - Calls the HuggingFace Inference API — no weights downloaded locally
 - Requires a free HuggingFace account and API token
 - Works on any machine, including low-end hardware and Colab free tier
-- Subject to HuggingFace rate limits on the free tier
+- Uses your HuggingFace account's free monthly inference credits — each call consumes a small amount
+- If you exhaust your free credits, HuggingFace offers affordable top-ups
 
 ### `mode="local"`
 
 - Downloads model weights to `~/.cache/huggingface/` on first run
 - Subsequent runs load from cache — no repeated downloads
-- No rate limits, fully offline after initial download
+- No credits consumed, fully offline after initial download
 - Requires `pip install sin_transliterate[local]`
+- Recommended if you are running on Kaggle, Google Colab, or any machine with a GPU
 
 ---
 
