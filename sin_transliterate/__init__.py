@@ -3,9 +3,9 @@
 # correct
 from .core import SinTransliterator
 from .exceptions import (
-    SinTransliterateError,
     InvalidModelError,
     ModelLoadError,
+    SinTransliterateError,
     TransliterationError,
 )
 

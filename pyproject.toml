@@ -39,3 +39,9 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/savi664/sin_transliterate"
 Repository = "https://github.com/savi664/sin_transliterate"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]

@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from typing import Literal
-
 from .exceptions import InvalidModelError, ModelLoadError, TransliterationError
 from .model_registry import ModelType, ModeType, resolve
-
-ModeType = Literal["local", "api"]
 
 
 class SinTransliterator:
@@ -37,8 +33,10 @@ class SinTransliterator:
     >>> t.transliterate("mama yanawa")
 
     # API inference (just needs a HF token, works on any machine)
-    >>> t = SinTransliterator(model="transformer", contains_code_mix=False, mode="api", hf_token="hf_...")
-    >>> t.transliterate("mama yanawa")
+    >>> t = SinTransliterator(
+...     model="transformer", contains_code_mix=False,
+...     mode="api", hf_token="hf_..."
+... )
     """
 
     VALID_MODELS = ("transformer", "llm")
@@ -80,8 +78,8 @@ class SinTransliterator:
         try:
             import torch
             from transformers import (
-                AutoModelForSeq2SeqLM,
                 AutoModelForCausalLM,
+                AutoModelForSeq2SeqLM,
                 AutoTokenizer,
             )
         except ImportError as e:
@@ -99,11 +97,11 @@ class SinTransliterator:
             if self._spec.architecture == "seq2seq":
                 self._model = AutoModelForSeq2SeqLM.from_pretrained(
                     self._spec.repo_id, cache_dir=cache_dir
-                ).to(self._device)
+                ).to(self._device) # type: ignore[arg-type]
             else:
                 self._model = AutoModelForCausalLM.from_pretrained(
                     self._spec.repo_id, cache_dir=cache_dir
-                ).to(self._device)
+                ).to(self._device) # type: ignore[arg-type]
             self._model.eval()
 
         except Exception as exc:

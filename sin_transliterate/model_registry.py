@@ -45,5 +45,7 @@ _REGISTRY: dict[tuple[ModelType, bool], ModelSpec] = {
 def resolve(model: ModelType, contains_code_mix: bool) -> ModelSpec:
     key = (model, contains_code_mix)
     if key not in _REGISTRY:
-        raise KeyError(f"No model registered for model={model!r}, contains_code_mix={contains_code_mix}")
+        raise KeyError(
+            f"No model registered for model={model!r}, contains_code_mix={contains_code_mix}"
+        )
     return _REGISTRY[key]
