@@ -1,0 +1,5 @@
+[
+  {"input": "mama yanawa", "expected_contains": "යනවා"},
+  {"input": "api inne api", "expected_contains": "ඉන්නේ"},
+  {"input": "mama office ekkata yanawa", "expected_contains": "ඔෆිස්"}
+]
