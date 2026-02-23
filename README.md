@@ -32,10 +32,10 @@ Four fine-tuned models underpin the package:
 
 | Model | Architecture | Code-Mix Support | HuggingFace |
 |---|---|---|---|
-| Small100 Base | Seq2Seq Transformer | ✗ | [savinugunarathna/Small100-Singlish-Sinhala-Merged](https://huggingface.co/savinugunarathna/Small100-Singlish-Sinhala-Merged) |
-| Small100 Code-Mix | Seq2Seq Transformer | ✓ | [savinugunarathna/small-100-Singlish-Sinhala-CodeMix](https://huggingface.co/savinugunarathna/small-100-Singlish-Sinhala-CodeMix) |
-| Gemma3 Base | Causal LLM | ✗ | [savinugunarathna/Gemma3-Singlish-Sinhala-Merged](https://huggingface.co/savinugunarathna/Gemma3-Singlish-Sinhala-Merged) |
-| Gemma3 Code-Mix | Causal LLM | ✓ | [savinugunarathna/Gemma3-Singlish-Sinhala-CodeMix](https://huggingface.co/savinugunarathna/Gemma3-Singlish-Sinhala-CodeMix) |
+| Small100 Base | Seq2Seq Transformer | No | [savinugunarathna/Small100-Singlish-Sinhala-Merged](https://huggingface.co/savinugunarathna/Small100-Singlish-Sinhala-Merged) |
+| Small100 Code-Mix | Seq2Seq Transformer | Yes | [savinugunarathna/small-100-Singlish-Sinhala-CodeMix](https://huggingface.co/savinugunarathna/small-100-Singlish-Sinhala-CodeMix) |
+| Gemma3 Base | Causal LLM | No | [savinugunarathna/Gemma3-Singlish-Sinhala-Merged](https://huggingface.co/savinugunarathna/Gemma3-Singlish-Sinhala-Merged) |
+| Gemma3 Code-Mix | Causal LLM | Yes | [savinugunarathna/Gemma3-Singlish-Sinhala-CodeMix](https://huggingface.co/savinugunarathna/Gemma3-Singlish-Sinhala-CodeMix) |
 
 ---
 
@@ -70,7 +70,6 @@ t = SinTransliterator(
     hf_token="hf_your_token_here"
 )
 print(t.transliterate("mama yanawa"))
-# → මම යනවා
 
 # Code-mixed input (Sinhala + English)
 t_mix = SinTransliterator(
@@ -80,7 +79,6 @@ t_mix = SinTransliterator(
     hf_token="hf_your_token_here"
 )
 print(t_mix.transliterate("mama office ekkata yanawa"))
-# → මම ඔෆිස් එකට යනවා
 ```
 
 ### Local Mode
@@ -97,7 +95,6 @@ t = SinTransliterator(
     mode="local"
 )
 print(t.transliterate("mama yanawa"))
-# → මම යනවා
 
 # Force a specific device
 t = SinTransliterator(
@@ -107,7 +104,6 @@ t = SinTransliterator(
     device="cuda"
 )
 print(t.transliterate("mama office ekkata yanawa"))
-# → මම ඔෆිස් එකට යනවා
 ```
 
 ---
@@ -149,8 +145,8 @@ Both models are deliberately compact — well within reach of consumer hardware.
 
 | Model | Parameters | VRAM (estimated) | CPU Inference |
 |---|---|---|---|
-| Small100 (transformer) | ~600M | ~0.75 GB | ✓ Viable |
-| Gemma3 (llm) | ~500M | ~0.60 GB | ✓ Viable |
+| Small100 (transformer) | ~600M | ~0.75 GB | Viable |
+| Gemma3 (llm) | ~500M | ~0.60 GB | Viable |
 
 Any GPU with 2 GB+ VRAM handles both models comfortably. CPU inference is slower but fully functional — expect a few seconds per inference on a modern CPU.
 
@@ -243,4 +239,4 @@ This package would not exist without the following contributions:
 
 ---
 
-*Built with 🤍 for the Sinhala NLP community.*
+*Built with love for the Sinhala NLP community.*
