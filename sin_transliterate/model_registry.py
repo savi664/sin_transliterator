@@ -4,16 +4,20 @@ from dataclasses import dataclass
 from typing import Literal
 
 ModelType = Literal["transformer", "llm"]
+ModeType = Literal["local", "api"]
 
 
 @dataclass(frozen=True)
 class ModelSpec:
     repo_id: str
-    architecture: str  
+    architecture: str
     supports_code_mix: bool
 
+    @property
+    def api_url(self) -> str:
+        return f"https://api-inference.huggingface.co/models/{self.repo_id}"
 
-# Replace these with your actual HF repo IDs
+
 _REGISTRY: dict[tuple[ModelType, bool], ModelSpec] = {
     ("transformer", False): ModelSpec(
         repo_id="savinugunarathna/Small100-Singlish-Sinhala-Merged",
@@ -27,12 +31,12 @@ _REGISTRY: dict[tuple[ModelType, bool], ModelSpec] = {
     ),
     ("llm", False): ModelSpec(
         repo_id="savinugunarathna/Gemma3-Singlish-Sinhala-Merged",
-        architecture="decoder only",
+        architecture="causal",
         supports_code_mix=False,
     ),
     ("llm", True): ModelSpec(
         repo_id="savinugunarathna/Gemma3-Singlish-Sinhala-CodeMix",
-        architecture="decoder only",
+        architecture="causal",
         supports_code_mix=True,
     ),
 }

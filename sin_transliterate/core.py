@@ -1,25 +1,11 @@
-# sin_transliterate/core.py
-
 from __future__ import annotations
 
 from typing import Literal
 
 from .exceptions import InvalidModelError, ModelLoadError, TransliterationError
-from .model_registry import ModelType, resolve
+from .model_registry import ModelType, ModeType, resolve
 
-try:
-    from transformers import (
-        AutoModelForSeq2SeqLM,
-        AutoModelForCausalLM,
-        AutoTokenizer,
-        pipeline,
-    )
-    import torch
-except ImportError as e:
-    raise ImportError(
-        "sin_transliterate requires 'transformers' and 'torch'. "
-        "Install them with: pip install sin_transliterate"
-    ) from e
+ModeType = Literal["local", "api"]
 
 
 class SinTransliterator:
@@ -29,97 +15,105 @@ class SinTransliterator:
     Parameters
     ----------
     model : {"transformer", "llm"}
-        Architecture family to load. "transformer" selects the fine-tuned
-        seq2seq model; "llm" selects the causal language model variant.
+        Architecture family to use.
     contains_code_mix : bool
-        When True, loads the variant fine-tuned to handle Sinhala/English
-        code-mixed input. Defaults to False.
+        Load the code-mix capable variant when True.
+    mode : {"local", "api"}
+        "local" downloads and runs the model on your machine.
+        "api" calls the HuggingFace Inference API — no GPU or
+        model download required, just a free HF token.
+    hf_token : str, optional
+        HuggingFace API token. Required when mode="api".
+        Get one free at https://huggingface.co/settings/tokens
     device : str, optional
-        PyTorch device string (e.g. "cpu", "cuda", "mps"). Defaults to
-        automatic detection.
+        PyTorch device string. Only used when mode="local".
     cache_dir : str, optional
-        Local directory for caching downloaded model weights. Defaults to
-        the HuggingFace Hub default (~/.cache/huggingface).
+        Local cache directory. Only used when mode="local".
 
     Examples
     --------
-    >>> t = SinTransliterator(model="transformer", contains_code_mix=False)
+    # Local inference (requires GPU/CPU + model download)
+    >>> t = SinTransliterator(model="transformer", contains_code_mix=False, mode="local")
     >>> t.transliterate("mama yanawa")
-    'මම යනවා'
 
-    >>> t_mix = SinTransliterator(model="llm", contains_code_mix=True)
-    >>> t_mix.transliterate("mama office yanawa")
-    'මම ඔෆිස් යනවා'
+    # API inference (just needs a HF token, works on any machine)
+    >>> t = SinTransliterator(model="transformer", contains_code_mix=False, mode="api", hf_token="hf_...")
+    >>> t.transliterate("mama yanawa")
     """
 
     VALID_MODELS = ("transformer", "llm")
+    VALID_MODES = ("local", "api")
 
     def __init__(
-            self,
-            model: ModelType = "transformer",
-            contains_code_mix: bool = False,
-            device: str | None = None,
-            cache_dir: str | None = None,
+        self,
+        model: ModelType = "transformer",
+        contains_code_mix: bool = False,
+        mode: ModeType = "local",
+        hf_token: str | None = None,
+        device: str | None = None,
+        cache_dir: str | None = None,
     ) -> None:
         if model not in self.VALID_MODELS:
             raise InvalidModelError(
                 f"model={model!r} is not valid. Choose from {self.VALID_MODELS}."
             )
+        if mode not in self.VALID_MODES:
+            raise InvalidModelError(
+                f"mode={mode!r} is not valid. Choose from {self.VALID_MODES}."
+            )
+        if mode == "api" and not hf_token:
+            raise InvalidModelError(
+                "hf_token is required when mode='api'. "
+                "Get a free token at https://huggingface.co/settings/tokens"
+            )
 
         self._model_type = model
         self._contains_code_mix = contains_code_mix
-        self._device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self._mode = mode
+        self._hf_token = hf_token
+        self._spec = resolve(model, contains_code_mix)
 
-        spec = resolve(model, contains_code_mix)
-        self._spec = spec
+        if mode == "local":
+            self._load_local(device, cache_dir)
+
+    def _load_local(self, device: str | None, cache_dir: str | None) -> None:
+        try:
+            import torch
+            from transformers import (
+                AutoModelForSeq2SeqLM,
+                AutoModelForCausalLM,
+                AutoTokenizer,
+            )
+        except ImportError as e:
+            raise ImportError(
+                "Local mode requires 'transformers' and 'torch'. "
+                "Install with: pip install sin_transliterate[local]"
+            ) from e
+
+        self._device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
         try:
             self._tokenizer = AutoTokenizer.from_pretrained(
-                spec.repo_id, cache_dir=cache_dir
+                self._spec.repo_id, cache_dir=cache_dir
             )
-
-            if spec.architecture == "seq2seq":
+            if self._spec.architecture == "seq2seq":
                 self._model = AutoModelForSeq2SeqLM.from_pretrained(
-                    spec.repo_id, cache_dir=cache_dir
+                    self._spec.repo_id, cache_dir=cache_dir
                 ).to(self._device)
             else:
                 self._model = AutoModelForCausalLM.from_pretrained(
-                    spec.repo_id, cache_dir=cache_dir
+                    self._spec.repo_id, cache_dir=cache_dir
                 ).to(self._device)
-
             self._model.eval()
 
         except Exception as exc:
             raise ModelLoadError(
-                f"Failed to load model '{spec.repo_id}' from HuggingFace Hub. "
-                f"Check your internet connection and that the repo is accessible.\n"
+                f"Failed to load '{self._spec.repo_id}' from HuggingFace Hub.\n"
                 f"Original error: {exc}"
             ) from exc
 
-    def transliterate(self, text: str, max_new_tokens: int = 256) -> str:
-        """
-        Transliterate romanised Sinhala text to Sinhala Unicode script.
-
-        Parameters
-        ----------
-        text : str
-            Input romanised or code-mixed text.
-        max_new_tokens : int
-            Maximum number of tokens to generate. Defaults to 256.
-
-        Returns
-        -------
-        str
-            Sinhala Unicode output.
-
-        Raises
-        ------
-        TransliterationError
-            If inference fails for any reason.
-        """
-        if not isinstance(text, str) or not text.strip():
-            raise ValueError("Input text must be a non-empty string.")
-
+    def _transliterate_local(self, text: str, max_new_tokens: int) -> str:
+        import torch
         try:
             inputs = self._tokenizer(
                 text, return_tensors="pt", padding=True, truncation=True
@@ -127,27 +121,78 @@ class SinTransliterator:
 
             with torch.no_grad():
                 if self._spec.architecture == "seq2seq":
-                    output_ids = self._model.generate(
-                        **inputs, max_new_tokens=max_new_tokens
-                    )
+                    output_ids = self._model.generate(**inputs, max_new_tokens=max_new_tokens)
                 else:
                     output_ids = self._model.generate(
                         **inputs,
                         max_new_tokens=max_new_tokens,
                         pad_token_id=self._tokenizer.eos_token_id,
                     )
-
             return self._tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
         except Exception as exc:
             raise TransliterationError(
-                f"Inference failed on input: {text!r}\nOriginal error: {exc}"
+                f"Local inference failed on: {text!r}\nOriginal error: {exc}"
             ) from exc
+
+    def _transliterate_api(self, text: str, max_new_tokens: int) -> str:
+        try:
+            import requests
+        except ImportError as e:
+            raise ImportError(
+                "API mode requires 'requests'. Install with: pip install requests"
+            ) from e
+
+        try:
+            response = requests.post(
+                self._spec.api_url,
+                headers={"Authorization": f"Bearer {self._hf_token}"},
+                json={
+                    "inputs": text,
+                    "parameters": {"max_new_tokens": max_new_tokens}
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            # HF Inference API returns different shapes for seq2seq vs causal
+            if isinstance(data, list) and "generated_text" in data[0]:
+                return data[0]["generated_text"]
+            return str(data)
+
+        except Exception as exc:
+            raise TransliterationError(
+                f"API inference failed on: {text!r}\nOriginal error: {exc}"
+            ) from exc
+
+    def transliterate(self, text: str, max_new_tokens: int = 256) -> str:
+        """
+        Transliterate romanised Sinhala text to Sinhala Unicode.
+
+        Parameters
+        ----------
+        text : str
+            Input romanised or code-mixed text.
+        max_new_tokens : int
+            Maximum tokens to generate. Defaults to 256.
+
+        Returns
+        -------
+        str
+            Sinhala Unicode output.
+        """
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("Input text must be a non-empty string.")
+
+        if self._mode == "local":
+            return self._transliterate_local(text, max_new_tokens)
+        return self._transliterate_api(text, max_new_tokens)
 
     def __repr__(self) -> str:
         return (
             f"SinTransliterator("
             f"model={self._model_type!r}, "
             f"contains_code_mix={self._contains_code_mix}, "
-            f"device={self._device!r})"
+            f"mode={self._mode!r})"
         )
