@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import List
+
 from .exceptions import InvalidModelError, ModelLoadError, TransliterationError
 from .model_registry import ModelType, resolve
 

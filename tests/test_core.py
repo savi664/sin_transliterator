@@ -1,15 +1,20 @@
 import pytest
+import torch
 from unittest.mock import patch, MagicMock
 from sin_transliterate import SinTransliterator
-from sin_transliterate.exceptions import InvalidModelError, ModelLoadError
+from sin_transliterate.exceptions import InvalidModelError
 
 
 @pytest.fixture
-def mock_transformer_env(monkeypatch):
+def mock_transformer_env():
     mock_tokenizer = MagicMock()
     mock_model = MagicMock()
-    mock_model.generate.return_value = MagicMock()
+
+    mock_inputs = MagicMock()
+    mock_inputs.to.return_value = mock_inputs
+    mock_tokenizer.return_value = mock_inputs
     mock_tokenizer.decode.return_value = "මම යනවා"
+    mock_model.generate.return_value = torch.tensor([[1, 2, 3]])
 
     with patch("transformers.AutoTokenizer.from_pretrained", return_value=mock_tokenizer), \
          patch("transformers.AutoModelForSeq2SeqLM.from_pretrained", return_value=mock_model), \
@@ -44,16 +49,26 @@ class TestTransliterate:
             t.transliterate("   ")
 
     def test_returns_string(self, mock_transformer_env):
-        mock_tok, mock_mod = mock_transformer_env
-        import torch
-
-        mock_inputs = MagicMock()
-        mock_inputs.to.return_value = mock_inputs
-        mock_tok.return_value = mock_inputs
-
-        mock_mod.generate.return_value = torch.tensor([[1, 2, 3]])
-        mock_tok.decode.return_value = "මම යනවා"
-
         t = SinTransliterator(model="transformer", contains_code_mix=False)
-        result = t.transliterate("mama yanawa")
+        with patch.object(t, "_run_inference", return_value=["මම යනවා"]):
+            result = t.transliterate("mama yanawa")
         assert isinstance(result, str)
+        assert result == "මම යනවා"
+
+    def test_batch_returns_list(self, mock_transformer_env):
+        t = SinTransliterator(model="transformer", contains_code_mix=False)
+        with patch.object(t, "_run_inference", return_value=["මම යනවා", "කොහොමද"]):
+            results = t.transliterate_batch(["mama yanawa", "kohomada"])
+        assert isinstance(results, list)
+        assert len(results) == 2
+        assert all(isinstance(r, str) for r in results)
+
+    def test_batch_empty_list_raises(self, mock_transformer_env):
+        t = SinTransliterator(model="transformer", contains_code_mix=False)
+        with pytest.raises(ValueError):
+            t.transliterate_batch([])
+
+    def test_batch_invalid_item_raises(self, mock_transformer_env):
+        t = SinTransliterator(model="transformer", contains_code_mix=False)
+        with pytest.raises(ValueError):
+            t.transliterate_batch(["mama yanawa", ""])
