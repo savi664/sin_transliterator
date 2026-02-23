@@ -5,27 +5,18 @@ from sin_transliterate import SinTransliterator
 from sin_transliterate.exceptions import InvalidModelError, ModelLoadError
 
 
+
 @pytest.fixture
 def mock_transformer_env(monkeypatch):
-    """
-    Patches out all HuggingFace/torch calls so tests run without
-    downloading any weights. This is the correct approach for unit tests
-    on a package that wraps external models.
-    """
     mock_tokenizer = MagicMock()
-    mock_tokenizer.return_value = {"input_ids": MagicMock()}
-
     mock_model = MagicMock()
     mock_model.generate.return_value = MagicMock()
-
     mock_tokenizer.decode.return_value = "මම යනවා"
 
-    with patch("sin_transliterate.core.AutoTokenizer.from_pretrained", return_value=mock_tokenizer), \
-         patch("sin_transliterate.core.AutoModelForSeq2SeqLM.from_pretrained", return_value=mock_model), \
-         patch("sin_transliterate.core.torch.cuda.is_available", return_value=False):
+    with patch("transformers.AutoTokenizer.from_pretrained", return_value=mock_tokenizer), \
+         patch("transformers.AutoModelForSeq2SeqLM.from_pretrained", return_value=mock_model), \
+         patch("torch.cuda.is_available", return_value=False):
         yield mock_tokenizer, mock_model
-
-
 class TestInstantiation:
     def test_valid_transformer_no_codemix(self, mock_transformer_env):
         t = SinTransliterator(model="transformer", contains_code_mix=False)
