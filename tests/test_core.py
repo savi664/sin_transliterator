@@ -1,9 +1,7 @@
-# tests/test_core.py
 import pytest
 from unittest.mock import patch, MagicMock
 from sin_transliterate import SinTransliterator
 from sin_transliterate.exceptions import InvalidModelError, ModelLoadError
-
 
 
 @pytest.fixture
@@ -17,6 +15,8 @@ def mock_transformer_env(monkeypatch):
          patch("transformers.AutoModelForSeq2SeqLM.from_pretrained", return_value=mock_model), \
          patch("torch.cuda.is_available", return_value=False):
         yield mock_tokenizer, mock_model
+
+
 class TestInstantiation:
     def test_valid_transformer_no_codemix(self, mock_transformer_env):
         t = SinTransliterator(model="transformer", contains_code_mix=False)
@@ -47,12 +47,10 @@ class TestTransliterate:
         mock_tok, mock_mod = mock_transformer_env
         import torch
 
-        # Create a mock that behaves like a BatchEncoding (has .to())
         mock_inputs = MagicMock()
         mock_inputs.to.return_value = mock_inputs
         mock_tok.return_value = mock_inputs
 
-        # Mock generate and decode
         mock_mod.generate.return_value = torch.tensor([[1, 2, 3]])
         mock_tok.decode.return_value = "මම යනවා"
 

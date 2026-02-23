@@ -1,10 +1,7 @@
-# sin_transliterate/model_registry.py
-
 from dataclasses import dataclass
 from typing import Literal
 
 ModelType = Literal["transformer", "llm"]
-ModeType = Literal["local", "api"]
 
 
 @dataclass(frozen=True)
@@ -12,10 +9,6 @@ class ModelSpec:
     repo_id: str
     architecture: str
     supports_code_mix: bool
-
-    @property
-    def api_url(self) -> str:
-        return f"https://router.huggingface.co/hf-inference/models/{self.repo_id}"
 
 
 _REGISTRY: dict[tuple[ModelType, bool], ModelSpec] = {

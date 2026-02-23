@@ -1,6 +1,3 @@
-# sin_transliterate/__init__.py
-
-# correct
 from .core import SinTransliterator
 from .exceptions import (
     InvalidModelError,
@@ -9,7 +6,7 @@ from .exceptions import (
     TransliterationError,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __all__ = [
     "SinTransliterator",
     "SinTransliterateError",

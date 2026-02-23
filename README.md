@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/sin_transliterate)](https://pypi.org/project/sin_transliterate/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A lightweight Python package for **Sinhala phonetic transliteration** — converting romanised Sinhala (Singlish) to Sinhala Unicode script. Backed by four fine-tuned models hosted on HuggingFace, with full support for Sinhala-English code-mixed input and two inference modes: local and API.
+A lightweight Python package for **Sinhala phonetic transliteration** — converting romanised Sinhala (Singlish) to Sinhala Unicode script. Backed by four fine-tuned models hosted on HuggingFace, with full support for Sinhala-English code-mixed input.
 
 ---
 
@@ -15,7 +15,6 @@ A lightweight Python package for **Sinhala phonetic transliteration** — conver
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Model Selection Guide](#model-selection-guide)
-- [Inference Modes](#inference-modes)
 - [VRAM & Hardware Requirements](#vram--hardware-requirements)
 - [API Reference](#api-reference)
 - [Error Handling](#error-handling)
@@ -41,72 +40,33 @@ Four fine-tuned models underpin the package:
 
 ## Installation
 
-**API mode only** — no GPU or model download required:
 ```bash
 pip install sin_transliterate
-```
-
-**Local inference** — downloads and runs models on your own machine:
-```bash
-pip install sin_transliterate[local]
 ```
 
 ---
 
 ## Quickstart
 
-### API Mode (recommended for most users)
-
-No model download. No GPU. Just a free HuggingFace token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
-
-API mode uses your HuggingFace account's free inference credits. Each transliteration call consumes a small amount of credits. The free tier includes a monthly allowance that is sufficient for regular use.
+Downloads model weights on first run and caches them locally. Works on any machine — GPU is used automatically if available, otherwise falls back to CPU.
 
 ```python
 from sin_transliterate import SinTransliterator
 
 # Pure Sinhala input
-t = SinTransliterator(
-    model="transformer",
-    contains_code_mix=False,
-    mode="api",
-    hf_token="hf_your_token_here"
-)
+t = SinTransliterator(model="transformer", contains_code_mix=False)
 print(t.transliterate("mama yanawa"))
 
 # Code-mixed input (Sinhala + English)
-t_mix = SinTransliterator(
-    model="transformer",
-    contains_code_mix=True,
-    mode="api",
-    hf_token="hf_your_token_here"
-)
+t_mix = SinTransliterator(model="transformer", contains_code_mix=True)
 print(t_mix.transliterate("mama office ekkata yanawa"))
-```
-
-### Local Mode
-
-Downloads model weights to your machine and runs inference locally. No credits, no rate limits, fully offline after the initial download.
-
-```python
-from sin_transliterate import SinTransliterator
-
-# Uses GPU automatically if available, falls back to CPU
-t = SinTransliterator(
-    model="transformer",
-    contains_code_mix=False,
-    mode="local"
-)
-print(t.transliterate("mama yanawa"))
 
 # Force a specific device
-t = SinTransliterator(
-    model="llm",
-    contains_code_mix=True,
-    mode="local",
-    device="cuda"
-)
+t = SinTransliterator(model="llm", contains_code_mix=True, device="cuda")
 print(t.transliterate("mama office ekkata yanawa"))
 ```
+
+Recommended on Kaggle, Google Colab, or any machine with a GPU for best performance. CPU inference is also fully supported.
 
 ---
 
@@ -120,26 +80,6 @@ print(t.transliterate("mama office ekkata yanawa"))
 | Sinhala + English mixed, higher quality | `"llm"` | `True` |
 
 **When in doubt, start with `model="transformer"`.** It's faster, lighter, and performs well on the vast majority of standard Singlish input. Reach for `model="llm"` when output quality on complex or ambiguous inputs matters more than speed.
-
----
-
-## Inference Modes
-
-### `mode="api"` (recommended for most users)
-
-- Calls the HuggingFace Inference API — no weights downloaded locally
-- Requires a free HuggingFace account and API token
-- Works on any machine, including low-end hardware and Colab free tier
-- Uses your HuggingFace account's free monthly inference credits — each call consumes a small amount
-- If you exhaust your free credits, HuggingFace offers affordable top-ups
-
-### `mode="local"`
-
-- Downloads model weights to `~/.cache/huggingface/` on first run
-- Subsequent runs load from cache — no repeated downloads
-- No credits consumed, fully offline after initial download
-- Requires `pip install sin_transliterate[local]`
-- Recommended if you are running on Kaggle, Google Colab, or any machine with a GPU
 
 ---
 
@@ -164,10 +104,8 @@ Any GPU with 2 GB+ VRAM handles both models comfortably. CPU inference is slower
 SinTransliterator(
     model="transformer",        # "transformer" | "llm"
     contains_code_mix=False,    # bool
-    mode="local",               # "local" | "api"
-    hf_token=None,              # str — required when mode="api"
-    device=None,                # str — e.g. "cuda", "cpu", "mps" (local mode only)
-    cache_dir=None              # str — custom cache path (local mode only)
+    device=None,                # str — e.g. "cuda", "cpu", "mps"
+    cache_dir=None              # str — custom cache path
 )
 ```
 
@@ -177,10 +115,8 @@ SinTransliterator(
 |---|---|---|---|
 | `model` | `str` | `"transformer"` | Architecture family. `"transformer"` uses the fine-tuned Small100 seq2seq model; `"llm"` uses the fine-tuned Gemma3 causal model. |
 | `contains_code_mix` | `bool` | `False` | When `True`, loads the variant fine-tuned on Sinhala-English code-mixed data. |
-| `mode` | `str` | `"local"` | `"local"` runs inference on your machine. `"api"` calls the HuggingFace Inference API. |
-| `hf_token` | `str` | `None` | HuggingFace API token. Mandatory when `mode="api"`. |
-| `device` | `str` | `None` | PyTorch device string. Auto-detected if not set (`"cuda"` if available, else `"cpu"`). Only applies to `mode="local"`. |
-| `cache_dir` | `str` | `None` | Directory for caching downloaded weights. Defaults to `~/.cache/huggingface/`. Only applies to `mode="local"`. |
+| `device` | `str` | `None` | PyTorch device string. Auto-detected if not set (`"cuda"` if available, else `"cpu"`). |
+| `cache_dir` | `str` | `None` | Directory for caching downloaded weights. Defaults to `~/.cache/huggingface/`. |
 
 #### `.transliterate(text, max_new_tokens=256)`
 
@@ -204,16 +140,13 @@ from sin_transliterate.exceptions import (
 )
 
 try:
-    t = SinTransliterator(model="transformer", contains_code_mix=False, mode="api", hf_token="hf_...")
+    t = SinTransliterator(model="transformer", contains_code_mix=False)
     result = t.transliterate("mama yanawa")
 except InvalidModelError as e:
-    # Invalid model or mode parameter passed
     print(f"Configuration error: {e}")
 except ModelLoadError as e:
-    # Model failed to download or initialise (local mode)
     print(f"Model load failed: {e}")
 except TransliterationError as e:
-    # Inference failed on the given input
     print(f"Inference error: {e}")
 ```
 
