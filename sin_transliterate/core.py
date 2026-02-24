@@ -104,7 +104,8 @@ class SinTransliterator:
                     )
 
             return [
-                self._tokenizer.decode(ids, skip_special_tokens=True)
+                self._tokenizer.decode(ids[1:] if self._spec.architecture == "seq2seq" else ids,
+                                       skip_special_tokens=True)
                 for ids in output_ids
             ]
 
