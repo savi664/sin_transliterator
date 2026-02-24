@@ -25,7 +25,7 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Lint
-        run: ruff check sin_transliterate/
+        run: ruff check sin_transliterator/
 
       - name: Run tests
-        run: pytest tests/ -v --cov=sin_transliterate
+        run: pytest tests/ -v --cov=sin_transliterator

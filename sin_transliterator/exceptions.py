@@ -1,8 +1,8 @@
-# sin_transliterate/exceptions.py
+# sin_transliterator/exceptions.py
 
 
 class SinTransliterateError(Exception):
-    """Base exception for all sin_transliterate errors."""
+    """Base exception for all sin_transliterator errors."""
 
 
 class InvalidModelError(SinTransliterateError):

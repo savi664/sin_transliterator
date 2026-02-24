@@ -57,8 +57,8 @@ class SinTransliterator:
             )
         except ImportError as e:
             raise ImportError(
-                "sin_transliterate requires 'transformers' and 'torch'. "
-                "Install with: pip install sin_transliterate[local]"
+                "sin_transliterator requires 'transformers' and 'torch'. "
+                "Install with: pip install sin_transliterator[local]"
             ) from e
 
         self._device = device or ("cuda" if torch.cuda.is_available() else "cpu")

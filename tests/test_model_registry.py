@@ -1,7 +1,7 @@
 # tests/test_model_registry.py
 import pytest
-from sin_transliterate.model_registry import resolve
-from sin_transliterate.exceptions import InvalidModelError
+from sin_transliterator.model_registry import resolve
+from sin_transliterator.exceptions import InvalidModelError
 
 
 def test_resolve_all_four_combinations():

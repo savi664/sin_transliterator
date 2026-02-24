@@ -1,8 +1,8 @@
 import pytest
 import torch
 from unittest.mock import patch, MagicMock
-from sin_transliterate import SinTransliterator
-from sin_transliterate.exceptions import InvalidModelError
+from sin_transliterator import SinTransliterator
+from sin_transliterator.exceptions import InvalidModelError
 
 
 @pytest.fixture

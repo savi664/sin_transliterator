@@ -52,7 +52,7 @@ pip install sin_transliterator
 Downloads model weights on first run and caches them locally. Works on any machine — GPU is used automatically if available, otherwise falls back to CPU.
 
 ```python
-from sin_transliterate import SinTransliterator
+from sin_transliterator import SinTransliterator
 
 # Pure Sinhala input
 t = SinTransliterator(model="transformer", contains_code_mix=False)
@@ -76,7 +76,7 @@ Recommended on Kaggle, Google Colab, or any machine with a GPU for best performa
 For converting large amounts of text, use `transliterate_batch()` instead of calling `transliterate()` in a loop. It feeds all inputs through the model in a single forward pass, making it significantly faster — especially on a GPU.
 
 ```python
-from sin_transliterate import SinTransliterator
+from sin_transliterator import SinTransliterator
 
 t = SinTransliterator(model="transformer", contains_code_mix=False)
 
@@ -95,7 +95,7 @@ For very large datasets, split into chunks to avoid running out of memory:
 
 ```python
 import pandas as pd
-from sin_transliterate import SinTransliterator
+from sin_transliterator import SinTransliterator
 
 df = pd.read_csv("your_file.csv")
 t = SinTransliterator(model="transformer", contains_code_mix=False)
@@ -183,8 +183,8 @@ Returns a `list of str` containing Sinhala Unicode outputs in the same order as 
 ## Error Handling
 
 ```python
-from sin_transliterate import SinTransliterator
-from sin_transliterate.exceptions import (
+from sin_transliterator import SinTransliterator
+from sin_transliterator.exceptions import (
     InvalidModelError,
     ModelLoadError,
     TransliterationError,
