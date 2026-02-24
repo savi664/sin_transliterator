@@ -130,9 +130,9 @@ df.to_csv("output.csv", index=False)
 Both models are deliberately compact — well within reach of consumer hardware.
 
 | Model | Parameters | VRAM (estimated) | CPU Inference |
-|---|---|---|---|
-| Small100 (transformer) | ~600M | ~0.75 GB | Viable |
-| Gemma3 (llm) | ~500M | ~0.60 GB | Viable |
+|---|------------|---|---|
+| Small100 (transformer) | ~300M      | ~0.75 GB | Viable |
+| Gemma3 (llm) | ~300M      | ~0.60 GB | Viable |
 
 Any GPU with 2 GB+ VRAM handles both models comfortably. CPU inference is slower but fully functional — expect a few seconds per inference on a modern CPU.
 
