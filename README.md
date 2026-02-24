@@ -1,4 +1,4 @@
-# sin_transliterate
+# sin_transliterator
 
 [![PyPI version](https://badge.fury.io/py/sin_transliterator.svg)](https://badge.fury.io/py/sin_transliterator)
 [![CI](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml/badge.svg)](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml)
@@ -26,7 +26,7 @@ A lightweight Python package for **Sinhala phonetic and adhoc transliteration** 
 
 ## Overview
 
-`sin_transliterate` exposes a single class — `SinTransliterator` — that resolves the correct model at runtime based on two parameters: the model architecture family and whether the input contains code-mixed text.
+`sin_transliterator` exposes a single class — `SinTransliterator` — that resolves the correct model at runtime based on two parameters: the model architecture family and whether the input contains code-mixed text.
 
 Four fine-tuned models underpin the package:
 
