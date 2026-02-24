@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/sin_transliterate)](https://pypi.org/project/sin_transliterate/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A lightweight Python package for **Sinhala phonetic transliteration** — converting romanised Sinhala (Singlish) to Sinhala Unicode script. Backed by four fine-tuned models hosted on HuggingFace, with full support for Sinhala-English code-mixed input.
+A lightweight Python package for **Sinhala phonetic and adhoc transliteration** — converting romanised Sinhala (Singlish) to Sinhala Unicode script. Backed by four fine-tuned models hosted on HuggingFace, with full support for Sinhala-English code-mixed input.
 
 ---
 
