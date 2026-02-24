@@ -1,8 +1,8 @@
 # sin_transliterate
 
-[![PyPI version](https://badge.fury.io/py/sin_transliterate.svg)](https://badge.fury.io/py/sin_transliterate)
+[![PyPI version](https://badge.fury.io/py/sin_transliterator.svg)](https://badge.fury.io/py/sin_transliterator)
 [![CI](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml/badge.svg)](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/pypi/pyversions/sin_transliterate)](https://pypi.org/project/sin_transliterate/)
+[![Python](https://img.shields.io/pypi/pyversions/sin_transliterator)](https://pypi.org/project/sin_transliterator/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight Python package for **Sinhala phonetic and adhoc transliteration** — converting romanised Sinhala (Singlish) to Sinhala Unicode script. Backed by four fine-tuned models hosted on HuggingFace, with full support for Sinhala-English code-mixed input.
@@ -42,7 +42,7 @@ Four fine-tuned models underpin the package:
 ## Installation
 
 ```bash
-pip install sin_transliterate
+pip install sin_transliterator
 ```
 
 ---
@@ -130,14 +130,15 @@ df.to_csv("output.csv", index=False)
 Both models are deliberately compact — well within reach of consumer hardware.
 
 | Model | Parameters | VRAM (estimated) | CPU Inference |
-|---|------------|---|---|
-| Small100 (transformer) | ~300M      | ~0.75 GB | Viable |
-| Gemma3 (llm) | ~300M      | ~0.60 GB | Viable |
+|---|---|---|---|
+| Small100 (transformer) | ~300M | ~0.75 GB | Viable |
+| Gemma3 (llm) | ~300M | ~0.60 GB | Viable |
 
 Any GPU with 2 GB+ VRAM handles both models comfortably. CPU inference is slower but fully functional — expect a few seconds per inference on a modern CPU.
 
 ---
 
+## API Reference
 
 ### `SinTransliterator`
 
