@@ -138,7 +138,6 @@ Any GPU with 2 GB+ VRAM handles both models comfortably. CPU inference is slower
 
 ---
 
-## API Reference
 
 ### `SinTransliterator`
 
