@@ -1,6 +1,6 @@
 # sin_transliterator
 
-[![PyPI version](https://badge.fury.io/py/sin_transliterator.svg)](https://badge.fury.io/py/sin_transliterator)
+[![PyPI version](https://img.shields.io/pypi/v/sin_transliterator)](https://pypi.org/project/sin_transliterator/)
 [![CI](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml/badge.svg)](https://github.com/savi664/sin_transliterate/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/sin_transliterator)](https://pypi.org/project/sin_transliterator/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
