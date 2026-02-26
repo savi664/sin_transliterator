@@ -87,9 +87,7 @@ class SinTransliterator:
         import torch
 
         CAUSAL_PROMPT = (
-            "Translate the following romanised Sinhala to Sinhala Unicode:\n"
-            "{input}\n"
-            "Sinhala:"
+            "Transliterate the following Singlish text to Sinhala by considering the context:\n{input}\nSinhala:"
         )
 
         try:
