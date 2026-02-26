@@ -85,31 +85,60 @@ class SinTransliterator:
 
     def _run_inference(self, texts: List[str], max_new_tokens: int) -> List[str]:
         import torch
+
+        CAUSAL_PROMPT = (
+            "Translate the following romanised Sinhala to Sinhala Unicode:\n"
+            "{input}\n"
+            "Sinhala:"
+        )
+
         try:
+            if self._spec.architecture == "causal":
+                formatted = [CAUSAL_PROMPT.format(input=t) for t in texts]
+            else:
+                formatted = texts
+
             inputs = self._tokenizer(
-                texts,
+                formatted,
                 return_tensors="pt",
                 padding=True,
-                truncation=True
+                truncation=True,
             ).to(self._device)
+
+            input_len = inputs["input_ids"].shape[1]
 
             with torch.no_grad():
                 if self._spec.architecture == "seq2seq":
-                    output_ids = self._model.generate(**inputs, max_new_tokens=max_new_tokens)
+                    output_ids = self._model.generate(
+                        **inputs, max_new_tokens=max_new_tokens
+                    )
                 else:
                     output_ids = self._model.generate(
                         **inputs,
                         max_new_tokens=max_new_tokens,
                         pad_token_id=self._tokenizer.eos_token_id,
+                        repetition_penalty=1.2,
                     )
 
-            return [
-                self._tokenizer.decode(
-                    ids[1:] if self._spec.architecture == "seq2seq" else ids,
-                    skip_special_tokens=True
-                ).replace("__si__", "").strip()
-                for ids in output_ids
-            ]
+            results = []
+            for ids in output_ids:
+                if self._spec.architecture == "causal":
+                    # Slice off the prompt tokens — only decode what was generated
+                    decoded = self._tokenizer.decode(
+                        ids[input_len:], skip_special_tokens=True
+                    )
+                else:
+                    decoded = self._tokenizer.decode(
+                        ids[1:], skip_special_tokens=True
+                    )
+                results.append(decoded.replace("__si__", "").strip())
+
+            return results
+
+        except Exception as exc:
+            raise TransliterationError(
+                f"Inference failed.\nOriginal error: {exc}"
+            ) from exc
 
         except Exception as exc:
             raise TransliterationError(
